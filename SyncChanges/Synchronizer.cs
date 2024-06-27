@@ -424,7 +424,7 @@ namespace SyncChanges
             var changeInfo = new ChangeInfo();
             var changes = new List<Change>();
 
-            using (var db = GetDatabase(source.ConnectionString, DatabaseType.SqlServer2008))
+            using (var db = GetDatabase(source.ConnectionString, DatabaseType.SqlServer2012))
             {
                 var snapshotIsolationEnabled = db.ExecuteScalar<int>("select snapshot_isolation_state from sys.databases where name = DB_NAME()") == 1;
                 if (snapshotIsolationEnabled)
