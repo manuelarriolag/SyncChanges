@@ -52,7 +52,7 @@ namespace SyncChanges.Service
                 var dryRun = ConfigurationManager.AppSettings["DryRun"].Equals("true", StringComparison.OrdinalIgnoreCase);
 
                 CancellationTokenSource = new();
-                Synchronizer = new Synchronizer(config) { Timeout = timeout, Interval = interval, DryRun = dryRun };
+                Synchronizer = new LocalToLocalSynchronizer(config) { Timeout = timeout, Interval = interval, DryRun = dryRun };
                 SyncTask = Task.Factory.StartNew(() => Synchronizer.SyncLoop(CancellationTokenSource.Token), TaskCreationOptions.LongRunning);
                 await SyncTask;
             }

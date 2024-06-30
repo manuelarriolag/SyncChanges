@@ -15,12 +15,21 @@ namespace SyncChanges.Tests
     [TestFixture]
     public class Tests
     {
+
+        /// <summary>
+        ///  Para correr esto en LocalDB, porsiblemente tenga que eliminarse la instancia previamente creada
+        ///  
+        /// sqllocaldb delete mssqllocaldb
+        ///
+        /// sqllocaldb create mssqllocaldb
+        /// 
+        /// </summary>
         const string ConnectionString = @"Server=(localdb)\MSSQLLocalDB;Integrated Security=true";
         const string SourceDatabaseName = "SyncChangesTestSource";
         const string DestinationDatabaseName = "SyncChangesTestDestination";
 
         static string GetConnectionString(string db = "") => ConnectionString + (db.Length > 0 ? $";Initial Catalog={db}" : "");
-        static Database GetDatabase(string db = "") => new(GetConnectionString(db), DatabaseType.SqlServer2012, System.Data.SqlClient.SqlClientFactory.Instance);
+        static Database GetDatabase(string db = "") => new(GetConnectionString(db), DatabaseType.SqlServer2012, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
 
         static void DropDatabase(string name)
         {
@@ -228,7 +237,7 @@ namespace SyncChanges.Tests
                     db.Update(sourceUser);
                 }
 
-                var synchronizer = new Synchronizer(TestConfig);
+                var synchronizer = new LocalToLocalSynchronizer(TestConfig);
                 var success = synchronizer.Sync();
 
                 Assert.That(success, Is.True);
@@ -260,7 +269,7 @@ namespace SyncChanges.Tests
                     db.Update(sourceUser);
                 }
 
-                var synchronizer = new Synchronizer(TestConfig);
+                var synchronizer = new LocalToLocalSynchronizer(TestConfig);
                 var success = synchronizer.Sync();
 
                 Assert.That(success, Is.True);
@@ -301,7 +310,7 @@ namespace SyncChanges.Tests
                         db.Insert(user);
                 }
 
-                var synchronizer = new Synchronizer(TestConfig) { DryRun = dryRun };
+                var synchronizer = new LocalToLocalSynchronizer(TestConfig) { DryRun = dryRun };
                 var success = synchronizer.Sync();
 
                 Assert.That(success, Is.True);
@@ -368,7 +377,7 @@ namespace SyncChanges.Tests
                     db.Update(sourceUser);
                 }
 
-                var synchronizer = new Synchronizer(TestConfig);
+                var synchronizer = new LocalToLocalSynchronizer(TestConfig);
                 var success = synchronizer.Sync();
 
                 Assert.That(success, Is.True);
@@ -400,7 +409,7 @@ namespace SyncChanges.Tests
                 using (var db = GetDatabase(SourceDatabaseName))
                     db.Insert(sourceUser);
 
-                var synchronizer = new Synchronizer(TestConfig);
+                var synchronizer = new LocalToLocalSynchronizer(TestConfig);
                 var success = synchronizer.Sync();
 
                 Assert.That(success, Is.True);
@@ -450,7 +459,7 @@ namespace SyncChanges.Tests
                     db.Insert(sourceOrder);
                 }
 
-                var synchronizer = new Synchronizer(TestConfig);
+                var synchronizer = new LocalToLocalSynchronizer(TestConfig);
                 var success = synchronizer.Sync();
 
                 Assert.That(success, Is.True);
@@ -502,7 +511,7 @@ namespace SyncChanges.Tests
                     db.Update(sourceOrder2);
                 }
 
-                var synchronizer = new Synchronizer(TestConfig);
+                var synchronizer = new LocalToLocalSynchronizer(TestConfig);
                 var success = synchronizer.Sync();
 
                 Assert.That(success, Is.True);
@@ -537,7 +546,7 @@ namespace SyncChanges.Tests
                     db.Insert(sourceUser);
                 }
 
-                var synchronizer = new Synchronizer(TestConfig);
+                var synchronizer = new LocalToLocalSynchronizer(TestConfig);
                 var success = synchronizer.Sync();
 
                 Assert.That(success, Is.True);
@@ -572,7 +581,7 @@ namespace SyncChanges.Tests
         [Test]
         public void NullConfigTest()
         {
-            Assert.Throws<ArgumentException>(() => new Synchronizer(null));
+            Assert.Throws<ArgumentException>(() => new LocalToLocalSynchronizer(null));
         }
 
         [Test]
@@ -587,7 +596,7 @@ namespace SyncChanges.Tests
             };
             var config = new Config { ReplicationSets = { rs } };
 
-            var synchronizer = new Synchronizer(config)
+            var synchronizer = new LocalToLocalSynchronizer(config)
             {
                 Timeout = 1000
             };
@@ -608,11 +617,11 @@ namespace SyncChanges.Tests
             };
             var config = new Config { ReplicationSets = { rs } };
 
-            var synchronizer = new Synchronizer(config)
+            var synchronizer = new LocalToLocalSynchronizer(config)
             {
                 Timeout = 1000
             };
-            Assert.Throws<System.Data.SqlClient.SqlException>(() => synchronizer.Sync());
+            Assert.Throws<Microsoft.Data.SqlClient.SqlException>(() => synchronizer.Sync());
         }
 
         [Test]
@@ -635,7 +644,7 @@ namespace SyncChanges.Tests
                         db.Insert(user);
                 }
 
-                var synchronizer = new Synchronizer(TestConfig) { Interval = 2 };
+                var synchronizer = new LocalToLocalSynchronizer(TestConfig) { Interval = 2 };
                 var auto = new AutoResetEvent(false);
                 synchronizer.Synced += (s, e) => auto.Set();
                 var src = new CancellationTokenSource();

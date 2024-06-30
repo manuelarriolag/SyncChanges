@@ -2,7 +2,7 @@
 
 namespace SyncChanges
 {
-    class TableInfo
+    public class TableInfo
     {
         public string Name { get; set; }
         public IList<string> KeyColumns { get; set; }

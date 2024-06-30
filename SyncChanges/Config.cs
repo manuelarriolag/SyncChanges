@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SyncChanges
 {
     /// <summary>
     /// Represents configuration information for the replication of database changes.
     /// </summary>
+    [Serializable]
     public class Config
     {
         /// <summary>
@@ -23,6 +21,7 @@ namespace SyncChanges
     /// <summary>
     /// Represents a replication sets, i.e. the combination of a source database and one or more destination databases.
     /// </summary>
+    [Serializable]
     public class ReplicationSet
     {
         /// <summary>
@@ -61,6 +60,7 @@ namespace SyncChanges
     /// <summary>
     /// Represents information about a database.
     /// </summary>
+    [Serializable]
     public class DatabaseInfo
     {
         /// <summary>

@@ -1,9 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SyncChanges
 {
-    class Change
+    /// <summary>
+    /// 
+    /// </summary>
+    [Serializable]
+    public class Change
     {
         public TableInfo Table { get; set; }
         public long Version { get; set; }

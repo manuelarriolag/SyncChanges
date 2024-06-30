@@ -4,16 +4,19 @@
       "Name": "Test Viveksys",
         "Source": {
             "Name": "Primary",
-            "ConnectionString": "Data Source=LAPMARRIOLAT14;Initial Catalog=Viveksysv1_9_Primary;Integrated Security=True;MultipleActiveResultSets=True"
+            //"ConnectionString": "Data Source=LAPMARRIOLAT14;Initial Catalog=Viveksysv1_9_Primary;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True"
+            "ConnectionString": "Data Source=LAPMARRIOLAT14;Initial Catalog=Viveksysv1_9_Primary;Integrated Security=True;MultipleActiveResultSets=True;Encrypt=False"
         },
       "Destinations": [
         {
             "Name": "Secondary 1",
-            "ConnectionString": "Data Source=LAPMARRIOLAT14;Initial Catalog=Viveksysv1_9_Sec1;Integrated Security=True;MultipleActiveResultSets=True"
+            //"ConnectionString": "Data Source=LAPMARRIOLAT14;Initial Catalog=Viveksysv1_9_Sec1;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True"
+            "ConnectionString": "Data Source=LAPMARRIOLAT14;Initial Catalog=Viveksysv1_9_Sec1;Integrated Security=True;MultipleActiveResultSets=True;Encrypt=False"
         },
         {
             "Name": "Secondary 2",
-            "ConnectionString": "Data Source=LAPMARRIOLAT14;Initial Catalog=Viveksysv1_9_Sec2;Integrated Security=True;MultipleActiveResultSets=True"
+            //"ConnectionString": "Data Source=LAPMARRIOLAT14;Initial Catalog=Viveksysv1_9_Sec2;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True",
+            "ConnectionString": "Data Source=LAPMARRIOLAT14;Initial Catalog=Viveksysv1_9_Sec2;Integrated Security=True;MultipleActiveResultSets=True;Encrypt=False"
         }
       ],
         "Tables": [ "TipoActividad", "TipoCalifGestion", "TipoCarga", "ModuloSistema", "TipoCambio" ]

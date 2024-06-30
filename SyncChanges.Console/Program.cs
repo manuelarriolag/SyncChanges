@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace SyncChanges.Console
 {
@@ -22,11 +21,11 @@ namespace SyncChanges.Console
         bool Loop = false;
         int Interval = 30;
 
-        static int Main(string[] args)
-        {
+        static int Main(string[] args) {
             try
             {
                 System.Console.OutputEncoding = Encoding.UTF8;
+                System.Console.Title = "SyncChanges Console";
                 var program = new Program();
                 var showHelp = false;
 
@@ -47,8 +46,8 @@ namespace SyncChanges.Console
                         ShowHelp(options);
                         return 0;
                     }
-                }
-                catch (Exception ex)
+
+                } catch (Exception ex)
                 {
                     Log.Error(ex, "Error parsing command line arguments");
                     return 1;
@@ -63,24 +62,14 @@ namespace SyncChanges.Console
                 program.Sync();
 
                 return program.Error ? 1 : 0;
-            }
-            catch (Exception ex)
+            } catch (Exception ex)
             {
                 Log.Error(ex, "An error has occurred");
                 return 2;
             }
         }
 
-        static void ShowHelp(OptionSet p)
-        {
-            System.Console.WriteLine("Usage: SyncChanges [OPTION]... CONFIGFILE...");
-            System.Console.WriteLine("Replicate database changes.");
-            System.Console.WriteLine();
-            System.Console.WriteLine("Options:");
-            p.WriteOptionDescriptions(System.Console.Out);
-        }
-
-        void Sync()
+        private void Sync()
         {
             foreach (var configFile in ConfigFiles)
             {
@@ -99,7 +88,7 @@ namespace SyncChanges.Console
 
                 try
                 {
-                    var synchronizer = new Synchronizer(config) { DryRun = DryRun, Timeout = Timeout };
+                    var synchronizer = new LocalToLocalSynchronizer(config) { DryRun = DryRun, Timeout = Timeout };
                     if (!Loop)
                     {
                         var success = synchronizer.Sync();
@@ -124,5 +113,15 @@ namespace SyncChanges.Console
                 }
             }
         }
+        private static void ShowHelp(OptionSet p)
+        {
+            System.Console.WriteLine("Usage: SyncChanges [OPTION]... CONFIGFILE...");
+            System.Console.WriteLine("Replicate database changes.");
+            System.Console.WriteLine();
+            System.Console.WriteLine("Options:");
+            p.WriteOptionDescriptions(System.Console.Out);
+        }
+
+
     }
 }

@@ -11,7 +11,7 @@ namespace SyncChanges
         public bool IsConstraint { get; set; }
     }
 
-    class UniqueConstraint
+    public class UniqueConstraint
     {
         public string TableName { get; set; }
         public List<string> ColumnNames { get; set; } = [];

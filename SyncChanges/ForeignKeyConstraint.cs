@@ -2,7 +2,7 @@
 
 namespace SyncChanges
 {
-    class ForeignKeyConstraint
+    public class ForeignKeyConstraint
     {
         public string TableName { get; set; }
         public string ColumnName { get; set; }
