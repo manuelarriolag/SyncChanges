@@ -11,5 +11,6 @@ namespace SyncChanges
     {
         public long Version { get; set; }
         public List<Change> Changes { get; private set; } = new List<Change>();
+        public string FileName { get; set; }
     }
 }

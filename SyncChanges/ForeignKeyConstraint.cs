@@ -2,6 +2,7 @@
 
 namespace SyncChanges
 {
+    [Serializable]
     public class ForeignKeyConstraint
     {
         public string TableName { get; set; }

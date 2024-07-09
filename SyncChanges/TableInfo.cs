@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SyncChanges
 {
+    [Serializable]
     public class TableInfo
     {
         public string Name { get; set; }
@@ -10,5 +12,6 @@ namespace SyncChanges
         public IList<ForeignKeyConstraint> ForeignKeyConstraints { get; set; }
         public IList<UniqueConstraint> UniqueConstraints { get; set; }
         public bool HasIdentity { get; set; }
+        public long MinVersion { get; set; }
     }
 }

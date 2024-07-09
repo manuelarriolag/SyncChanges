@@ -1,10 +1,14 @@
 ﻿using Humanizer;
+using Newtonsoft.Json;
 using NLog;
 using NPoco;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace SyncChanges
 {
@@ -13,6 +17,12 @@ namespace SyncChanges
     /// </summary>
     public abstract class Synchronizer
     {
+        protected const string CHANGEINFO_TO_SEND = "changeinfo-to-send";
+        protected const string CHANGEINFO_SENDED = "changeinfo-sended";
+        protected const string CHANGEINFO_RECEIVED = "changeinfo-received";
+        protected const string CHANGEINFO_REPLICATED = "changeinfo-replicated";
+        protected const string CHANGEINFO_FAILED = "changeinfo-failed";
+
         /// <summary>
         /// Gets or sets a value indicating whether destination databases will be modified during a replication run.
         /// </summary>
@@ -450,7 +460,25 @@ namespace SyncChanges
 
         private static IEnumerable<string> Parameters(int n) => Enumerable.Range(0, n).Select(c => "@" + c);
 
-        private long GetCurrentVersion(DatabaseInfo dbInfo)
+        protected long GetCurrentVersionFromSource(DatabaseInfo dbInfo)
+        {
+            // TODO Falta implementar
+            var clone = dbInfo.DeepCopy();
+            clone.IsSource = true;
+            return this.GetCurrentVersionFinal(clone);
+        }
+
+        protected long GetCurrentVersionFromDestination(DatabaseInfo dbInfo)
+        {
+            // TODO Falta implementar
+            var clone = dbInfo.DeepCopy();
+            clone.IsSource = false;
+            return this.GetCurrentVersionFinal(clone);
+        }
+
+        protected abstract long GetCurrentVersion(DatabaseInfo dbInfo);
+
+        private long GetCurrentVersionFinal(DatabaseInfo dbInfo)
         {
             try
             {
@@ -466,6 +494,9 @@ namespace SyncChanges
                     {
                         Log.Info($"Change tracking not enabled in database {dbInfo.Name}, assuming version 0");
                         currentVersion = 0;
+
+                        SetSyncVersion(db, currentVersion);
+
                     }
                     else
                         Log.Info($"Database {dbInfo.Name} is at version {currentVersion}");
@@ -487,5 +518,112 @@ namespace SyncChanges
             }
 #pragma warning restore CA1031 // Do not catch general exception types
         }
+
+        protected void SaveState(ChangeInfo changeInfo, string fileName) {
+            try
+            {
+                string content = System.Text.Json.JsonSerializer.Serialize(changeInfo,
+                        new JsonSerializerOptions()
+                        {
+                            WriteIndented = true
+                        }                    
+                    );
+                File.WriteAllText(fileName, content);
+            } catch (Exception ex)
+            {
+                Log.Error(ex, $"Error writing file {fileName}");
+            }
+        }
+
+        protected T RestoreState<T>(string fileName) {
+            T result = default;
+            try
+            {
+                result = JsonConvert.DeserializeObject<T>(File.ReadAllText(fileName));
+            } catch (Exception ex)
+            {
+                Log.Error(ex, $"Error reading file {fileName}");
+            }
+            return result;
+        }
+
+        protected string PersistChangeInfo(ChangeInfo changeInfo) {
+            string directoryName = GetDirectoryName();
+            string utcNow = DateTime.UtcNow.ToString("yyyyMMddHHmmsss");
+            string uuid = Guid.NewGuid().ToString("N");
+            string fullFileName = Path.Combine(directoryName, $"{CHANGEINFO_TO_SEND}-{utcNow}-{uuid}-v{changeInfo.Version}.json");
+            changeInfo.FileName = Path.GetFileName(fullFileName);
+            SaveState(changeInfo, fullFileName);
+            return fullFileName;
+        }
+
+        protected ChangeInfo LoadChangeInfo(string fileName) {
+            return RestoreState<ChangeInfo>(fileName);
+        }
+
+        protected List<ChangeInfo> LoadPersistedChanges(string listType)
+        {
+            List<ChangeInfo> list = new List<ChangeInfo>();
+            string directoryName = GetDirectoryName();
+            var fileNames = Directory.GetFiles(directoryName, $"{listType}*.json");
+            foreach (string fileName in fileNames.OrderBy(s => s)) {
+                ChangeInfo changeInfo = LoadChangeInfo(fileName);
+                changeInfo.FileName = fileName;
+                list.Add(changeInfo);
+                Log.Info($"ChangeInfo loaded: {fileName}");
+            }
+            return list;
+        }
+
+        private static string GetDirectoryName() {
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "viveksys");
+        }
+
+        protected string RenameFileName(string fileName,  string oldValue, string newValue) {
+            string destFileName = fileName.Replace(oldValue, newValue);
+            File.Move(fileName, destFileName);
+            return destFileName;
+        }
+
+        protected void TransferAllToBroker()
+        {
+            string directoryName = GetDirectoryName();
+            var fileNames = Directory.GetFiles(directoryName, $"{CHANGEINFO_TO_SEND}*.json");
+            foreach (string fileName in fileNames.OrderBy(s => s))
+            {
+                TransferToBroker(fileName);
+            }
+        }
+
+        protected void TransferToBroker(string fileName)
+        {
+
+            // TODO: Implementar transferencia
+
+            string destFileName = RenameFileName(fileName, CHANGEINFO_TO_SEND, CHANGEINFO_SENDED);
+            Log.Info($"ChangeInfo sended: {destFileName}");
+
+        }
+
+        protected void ReceiveAllFromBroker()
+        {
+            string directoryName = GetDirectoryName();
+            var fileNames = Directory.GetFiles(directoryName, $"{CHANGEINFO_SENDED}*.json");
+            foreach (string fileName in fileNames.OrderBy(s => s))
+            {
+                ReceiveFromBroker(fileName);
+            }
+        }
+
+        protected void ReceiveFromBroker(string fileName)
+        {
+
+            // TODO: Implementar recepción
+
+            string destFileName = RenameFileName(fileName, CHANGEINFO_SENDED, CHANGEINFO_RECEIVED);
+            Log.Info($"ChangeInfo received: {destFileName}");
+
+        }
+
     }
 }

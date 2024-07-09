@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace SyncChanges
 {
+    [Serializable]
     class UniqueColumn
     {
         public string TableName { get; set; }
@@ -11,6 +12,7 @@ namespace SyncChanges
         public bool IsConstraint { get; set; }
     }
 
+    [Serializable]
     public class UniqueConstraint
     {
         public string TableName { get; set; }

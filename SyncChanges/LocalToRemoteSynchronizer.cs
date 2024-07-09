@@ -10,7 +10,7 @@ namespace SyncChanges;
 /// <summary>
 /// 
 /// </summary>
-public class LocalToLocalSynchronizer : Synchronizer {
+public class LocalToRemoteSynchronizer : Synchronizer {
 
     static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
@@ -18,89 +18,46 @@ public class LocalToLocalSynchronizer : Synchronizer {
     /// Ejecuta la sincronización entre una BD local hacia una o varias locales
     /// </summary>
     /// <param name="config"></param>
-    public LocalToLocalSynchronizer(Config config) : base(config) { }
+    public LocalToRemoteSynchronizer(Config config) : base(config) { }
 
     /// <summary>
-    /// Replica los cambios hacia las BDs destino
+    /// Replica los cambios hacia destinos remotos, haciendo uso del Replicator y el Broker
     /// </summary>
     /// <param name="source"></param>
     /// <param name="destinations"></param>
     /// <param name="tables"></param>
     protected override void Replicate(DatabaseInfo source, IGrouping<long, DatabaseInfo> destinations, IList<TableInfo> tables) {
-        var changeInfo = RetrieveChanges(source, destinations, tables);
+        ChangeInfo changeInfo = RetrieveChanges(source, destinations, tables);
         if (changeInfo == null || changeInfo.Changes.Count == 0) return;
 
-        // replicate changes to destinations
-        foreach (var destination in destinations)
+        try
         {
-            try
-            {
-                Log.Info($"Replicating {"change".ToQuantity(changeInfo.Changes.Count)} to destination {destination.Name}");
+            Log.Info($"Replicating {"change".ToQuantity(changeInfo.Changes.Count)} to Remote Destination");
 
-                using var db = GetDatabase(destination.ConnectionString, DatabaseType.SqlServer2012);
-                using var transaction = db.GetTransaction(System.Data.IsolationLevel.ReadUncommitted);
+            // replicate changes to the remote destination via remote broker
 
-                try
-                {
-                    var changes = changeInfo.Changes;
-                    var disabledForeignKeyConstraints = new Dictionary<ForeignKeyConstraint, long>();
+            var fileName = PersistChangeInfo(changeInfo);
+            Log.Info($"ChangeInfo saved: {fileName}");
 
-                    for (int i = 0; i < changes.Count; i++)
-                    {
-                        var change = changes[i];
-                        Log.Debug($"Replicating change #{i + 1} of {changes.Count} (Version {change.Version}, CreationVersion {change.CreationVersion})");
-
-                        foreach (var fk in change.ForeignKeyConstraintsToDisable)
-                        {
-                            if (disabledForeignKeyConstraints.TryGetValue(fk.Key, out long untilVersion))
-                            {
-                                // FK is already disabled, check if it needs to be deferred further than currently planned
-                                if (fk.Value > untilVersion)
-                                    disabledForeignKeyConstraints[fk.Key] = fk.Value;
-                            } else
-                            {
-                                DisableForeignKeyConstraint(db, fk.Key);
-                                disabledForeignKeyConstraints[fk.Key] = fk.Value;
-                            }
-                        }
-
-                        PerformChange(db, change);
-
-                        if ((i + 1) >= changes.Count || changes[i + 1].CreationVersion > change.CreationVersion) // there may be more than one change with the same CreationVersion
-                        {
-                            foreach (var fk in disabledForeignKeyConstraints.Where(f => f.Value <= change.CreationVersion).Select(f => f.Key).ToList())
-                            {
-                                ReenableForeignKeyConstraint(db, fk);
-                                disabledForeignKeyConstraints.Remove(fk);
-                            }
-                        }
-                    }
-
-                    if (!DryRun)
-                    {
-                        SetSyncVersion(db, changeInfo.Version);
-                        transaction.Complete();
-                    }
-
-                    Log.Info($"Destination {destination.Name} now at version {changeInfo.Version}");
-                }
-#pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception ex)
-                {
-                    Error = true;
-                    Log.Error(ex, $"Error replicating changes to destination {destination.Name}");
-                }
-#pragma warning restore CA1031 // Do not catch general exception types
+            var changeInfoToVal = LoadChangeInfo(fileName);
+            if (changeInfoToVal == null || changeInfoToVal.Changes.Count != changeInfo.Changes.Count) {
+                throw new ApplicationException($"{fileName} file is invalid");
             }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception ex)
-            {
-                Error = true;
-                Log.Error(ex, $"Error replicating changes to destination {destination.Name}");
-            }
-#pragma warning restore CA1031 // Do not catch general exception types
+            Log.Info($"ChangeInfo is valid: {"change".ToQuantity(changeInfo.Changes.Count)}");
+
+            TransferToBroker(fileName);
+
         }
+#pragma warning disable CA1031 // Do not catch general exception types
+        catch (Exception ex)
+        {
+            Error = true;
+            Log.Error(ex, $"Error replicating changes to Remote Destination");
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
+
     }
+
 
     /// <summary>
     /// Obtiene el detalle de los cambios ocurridos en la BD Primary
@@ -132,15 +89,15 @@ public class LocalToLocalSynchronizer : Synchronizer {
             {
                 var tableName = table.Name;
                 var minVersion = db.ExecuteScalar<long?>("select CHANGE_TRACKING_MIN_VALID_VERSION(OBJECT_ID(@0))", tableName);
-
+                table.MinVersion = minVersion ?? 0;
                 Log.Info($"Minimum version of table {tableName} in database {source.Name} is {minVersion}");
 
-                if (minVersion > destinationVersion)
-                {
-                    Log.Error($"Cannot replicate table {tableName} to {"destination".ToQuantity(destinations.Count(), ShowQuantityAs.None)} {string.Join(", ", destinations.Select(d => d.Name))} because minimum source version {minVersion} is greater than destination version {destinationVersion}");
-                    Error = true;
-                    return null;
-                }
+                //if (minVersion > destinationVersion)
+                //{
+                //    Log.Error($"Cannot replicate table {tableName} to {"destination".ToQuantity(destinations.Count(), ShowQuantityAs.None)} {string.Join(", ", destinations.Select(d => d.Name))} because minimum source version {minVersion} is greater than destination version {destinationVersion}");
+                //    Error = true;
+                //    return null;
+                //}
 
                 var sql = $@"select c.SYS_CHANGE_OPERATION, c.SYS_CHANGE_VERSION, c.SYS_CHANGE_CREATION_VERSION,
                         {string.Join(", ", table.KeyColumns.Select(c => "c." + c).Concat(table.OtherColumns.Select(c => "t." + c)))}
@@ -184,9 +141,11 @@ public class LocalToLocalSynchronizer : Synchronizer {
                     numChanges++;
                 }
 
-                if (numChanges > 0) {
+                if (numChanges > 0)
+                {
                     Log.Warn($"Table {tableName} has {"change".ToQuantity(numChanges)}");
-                } else {
+                } else
+                {
                     Log.Info($"Table {tableName} has {"change".ToQuantity(numChanges)}");
                 }
 
@@ -204,11 +163,8 @@ public class LocalToLocalSynchronizer : Synchronizer {
     }
 
     protected override long GetCurrentVersion(DatabaseInfo dbInfo) {
-        if (dbInfo == null) return 0;
-        if (dbInfo.IsSource) 
-            return GetCurrentVersionFromSource(dbInfo);
-        else
-            return GetCurrentVersionFromDestination(dbInfo);
+        // MAG: Desde este tipo de Synchronizer debemos obtener la version desde la BD destino
+        return GetCurrentVersionFromDestination(dbInfo);
     }
 
 }

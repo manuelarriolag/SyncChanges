@@ -78,5 +78,7 @@ namespace SyncChanges
         /// The connection string.
         /// </value>
         public string ConnectionString { get; set; }
+
+        public bool IsSource { get; set; } 
     }
 }

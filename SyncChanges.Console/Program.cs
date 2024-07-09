@@ -61,6 +61,8 @@ namespace SyncChanges.Console
 
                 program.Sync();
 
+                //System.Console.ReadKey();
+
                 return program.Error ? 1 : 0;
             } catch (Exception ex)
             {
@@ -88,7 +90,9 @@ namespace SyncChanges.Console
 
                 try
                 {
-                    var synchronizer = new LocalToLocalSynchronizer(config) { DryRun = DryRun, Timeout = Timeout };
+                    //var synchronizer = new LocalToLocalSynchronizer(config) { DryRun = DryRun, Timeout = Timeout };
+                    var synchronizer = new LocalToRemoteSynchronizer(config) { DryRun = DryRun, Timeout = Timeout };
+                    //var synchronizer = new RemoteToLocalSynchronizer(config) { DryRun = DryRun, Timeout = Timeout };
                     if (!Loop)
                     {
                         var success = synchronizer.Sync();
