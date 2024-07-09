@@ -26,9 +26,13 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="instnwnd.sql" />
+    <None Remove="newrelic.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="instnwnd.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="newrelic.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
