@@ -10,6 +10,8 @@ using System.Text.Json;
 using System.Threading;
 using SyncChanges.Model;
 using TableInfo = SyncChanges.Model.TableInfo;
+using System.Threading.Tasks;
+using RestSharp;
 
 namespace SyncChanges
 {
@@ -54,7 +56,7 @@ namespace SyncChanges
         public event EventHandler<SyncEventArgs> Synced;
 
         static readonly Logger Log = LogManager.GetCurrentClassLogger();
-        private Config Config { get; set; }
+        private Config Config { get; }
         protected bool Error { get; set; }
 
         /// <summary>
@@ -327,7 +329,7 @@ namespace SyncChanges
             return db;
         }
 
-        protected abstract void Replicate(DatabaseInfo source, IGrouping<long, DatabaseInfo> destinations,
+        protected abstract Task Replicate(DatabaseInfo source, IGrouping<long, DatabaseInfo> destinations,
             IList<TableInfo> tables);
 
 
@@ -596,11 +598,41 @@ namespace SyncChanges
             }
         }
 
-        protected void TransferToBroker(string fileName)
+        protected async Task TransferToBroker(string fileName)
         {
 
-            // TODO: Implementar transferencia
+            //// Ejecutar transferencia hacia el broker
+            //Log.Info($"ChangeInfo transfering to broker: {fileName}");
+            //var client = new HttpClient();
 
+            //var request = new HttpRequestMessage(HttpMethod.Post, $"{Config.Broker.BaseUrl}/api/Broker/PostSingleFile");
+            //request.Headers.Add("accept", "*/*");
+
+            //var content = new MultipartFormDataContent();
+            //content.Add(new StreamContent(File.OpenRead(fileName)), "FileDetails", Path.GetFileName(fileName));
+            //content.Add(new StringContent("1"), "FileType"); //Json
+            //request.Content = content;
+            //var response = await client.SendAsync(request);
+            //response.EnsureSuccessStatusCode();
+
+            //var contentString = await response.Content.ReadAsStringAsync();
+            //Log.Debug($"response.contentString: {contentString}");
+
+
+
+            var options = new RestClientOptions(Config.Broker.BaseUrl); 
+            //options.MaxTimeout = -1;
+            var client = new RestClient(options);
+            var request = new RestRequest("/api/Broker/PostSingleFile", Method.Post);
+            request.AddHeader("accept", "*/*");
+            request.AlwaysMultipartFormData = true;
+            request.AddFile(Path.GetFileName(fileName), fileName);
+            request.AddParameter("FileType", "1"); //Json
+            RestResponse response = await client.ExecuteAsync(request);
+            Log.Debug($"response.Content: {response.Content}");
+
+
+            // Finalmente renombrar el archivo enviado
             string destFileName = RenameFileName(fileName, CHANGEINFO_TO_SEND, CHANGEINFO_SENDED);
             Log.Info($"ChangeInfo sended: {destFileName}");
 

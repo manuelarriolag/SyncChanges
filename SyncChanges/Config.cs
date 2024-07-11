@@ -16,6 +16,15 @@ namespace SyncChanges
         /// The replication sets.
         /// </value>
         public List<ReplicationSet> ReplicationSets { get; private set; } = new List<ReplicationSet>();
+
+        /// <summary>
+        /// Gets or sets the broker information.
+        /// </summary>
+        /// <value>
+        /// The broker for remote sync.
+        /// </value>
+        public BrokerInfo Broker { get; set; }
+
     }
 
     /// <summary>
@@ -55,6 +64,22 @@ namespace SyncChanges
         /// The tables to be replicated.
         /// </value>
         public List<string> Tables { get; set; } = new List<string>();
+
+    }
+
+    /// <summary>
+    /// Represents information about a broker.
+    /// </summary>
+    [Serializable]
+    public class BrokerInfo {
+        /// <summary>
+        /// Gets or sets the name of the database. Used solely for identification in logs etc.
+        /// </summary>
+        /// <value>
+        /// The name of the database.
+        /// </value>
+        public string BaseUrl { get; set; }
+
     }
 
     /// <summary>

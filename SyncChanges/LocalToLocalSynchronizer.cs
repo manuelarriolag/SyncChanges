@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Humanizer;
 using NPoco;
 using SyncChanges.Model;
@@ -28,9 +29,10 @@ public class LocalToLocalSynchronizer : Synchronizer {
     /// <param name="source"></param>
     /// <param name="destinations"></param>
     /// <param name="tables"></param>
-    protected override void Replicate(DatabaseInfo source, IGrouping<long, DatabaseInfo> destinations, IList<TableInfo> tables) {
+    protected override Task Replicate(DatabaseInfo source, IGrouping<long, DatabaseInfo> destinations,
+        IList<TableInfo> tables) {
         var changeInfo = RetrieveChanges(source, destinations, tables);
-        if (changeInfo == null || changeInfo.Changes.Count == 0) return;
+        if (changeInfo == null || changeInfo.Changes.Count == 0) return Task.CompletedTask;
 
         // replicate changes to destinations
         foreach (var destination in destinations)
@@ -102,6 +104,8 @@ public class LocalToLocalSynchronizer : Synchronizer {
             }
 #pragma warning restore CA1031 // Do not catch general exception types
         }
+
+        return Task.CompletedTask;
     }
 
     /// <summary>

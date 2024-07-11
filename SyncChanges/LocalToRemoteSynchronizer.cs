@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Humanizer;
 using NPoco;
 using SyncChanges.Model;
@@ -28,7 +29,8 @@ public class LocalToRemoteSynchronizer : Synchronizer {
     /// <param name="source"></param>
     /// <param name="destinations"></param>
     /// <param name="tables"></param>
-    protected override void Replicate(DatabaseInfo source, IGrouping<long, DatabaseInfo> destinations, IList<TableInfo> tables) {
+    protected override async Task Replicate(DatabaseInfo source, IGrouping<long, DatabaseInfo> destinations,
+        IList<TableInfo> tables) {
         ChangeInfo changeInfo = RetrieveChanges(source, destinations, tables);
         if (changeInfo == null || changeInfo.Changes.Count == 0) return;
 
@@ -47,16 +49,16 @@ public class LocalToRemoteSynchronizer : Synchronizer {
             }
             Log.Info($"ChangeInfo is valid: {"change".ToQuantity(changeInfo.Changes.Count)}");
 
-            TransferToBroker(fileName);
+            await TransferToBroker(fileName);
 
         }
-#pragma warning disable CA1031 // Do not catch general exception types
+//#pragma warning disable CA1031 // Do not catch general exception types
         catch (Exception ex)
         {
             Error = true;
             Log.Error(ex, $"Error replicating changes to Remote Destination");
         }
-#pragma warning restore CA1031 // Do not catch general exception types
+//#pragma warning restore CA1031 // Do not catch general exception types
 
     }
 

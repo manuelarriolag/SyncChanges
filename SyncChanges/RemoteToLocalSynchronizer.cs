@@ -5,6 +5,7 @@ using System.Linq;
 using Humanizer;
 using NPoco;
 using System.IO;
+using System.Threading.Tasks;
 using SyncChanges.Model;
 using TableInfo = SyncChanges.Model.TableInfo;
 
@@ -29,9 +30,10 @@ public class RemoteToLocalSynchronizer : Synchronizer {
     /// <param name="source"></param>
     /// <param name="destinations"></param>
     /// <param name="tables"></param>
-    protected override void Replicate(DatabaseInfo source, IGrouping<long, DatabaseInfo> destinations, IList<TableInfo> tables) {
+    protected override Task Replicate(DatabaseInfo source, IGrouping<long, DatabaseInfo> destinations,
+        IList<TableInfo> tables) {
         ChangeInfo changeInfo = RetrieveChanges(source, destinations, tables);
-        if (changeInfo == null || changeInfo.Changes.Count == 0) return;
+        if (changeInfo == null || changeInfo.Changes.Count == 0) return Task.CompletedTask;
 
 
         // replicate changes from the remote Origin via broker
@@ -139,6 +141,7 @@ public class RemoteToLocalSynchronizer : Synchronizer {
             RenameFileName(changeInfo.FileName, CHANGEINFO_RECEIVED, CHANGEINFO_FAILED);
         }
 
+        return Task.CompletedTask;
     }
 
 

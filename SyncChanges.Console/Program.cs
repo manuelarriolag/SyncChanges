@@ -7,12 +7,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Microsoft.Extensions.Configuration;
 
 namespace SyncChanges.Console
 {
     class Program
     {
         static readonly Logger Log = LogManager.GetCurrentClassLogger();
+        internal static IConfiguration Config { get; private set; }
 
         List<string> ConfigFiles;
         bool DryRun;
@@ -28,6 +30,10 @@ namespace SyncChanges.Console
                 System.Console.Title = "SyncChanges Console";
                 var program = new Program();
                 var showHelp = false;
+
+                Config = new ConfigurationBuilder()
+                    .AddJsonFile("appsettings.json")
+                    .Build();
 
                 try
                 {
