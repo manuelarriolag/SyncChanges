@@ -52,13 +52,11 @@ public class LocalToRemoteSynchronizer : Synchronizer {
             await TransferToBroker(fileName);
 
         }
-//#pragma warning disable CA1031 // Do not catch general exception types
         catch (Exception ex)
         {
             Error = true;
             Log.Error(ex, $"Error replicating changes to Remote Destination");
         }
-//#pragma warning restore CA1031 // Do not catch general exception types
 
     }
 

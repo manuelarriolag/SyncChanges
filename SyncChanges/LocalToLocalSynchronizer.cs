@@ -88,21 +88,17 @@ public class LocalToLocalSynchronizer : Synchronizer {
 
                     Log.Info($"Destination {destination.Name} now at version {changeInfo.Version}");
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
                 {
                     Error = true;
                     Log.Error(ex, $"Error replicating changes to destination {destination.Name}");
                 }
-#pragma warning restore CA1031 // Do not catch general exception types
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
                 Error = true;
                 Log.Error(ex, $"Error replicating changes to destination {destination.Name}");
             }
-#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         return Task.CompletedTask;

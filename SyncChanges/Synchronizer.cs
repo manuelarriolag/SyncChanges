@@ -200,13 +200,11 @@ namespace SyncChanges
                             Synced?.Invoke(this, new SyncEventArgs { ReplicationSet = replicationSet, Version = version });
                         }
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception ex)
                     {
                         Log.Error(ex, $"Error occurred during replication of set {replicationSet.Name}.");
                         Error = true;
                     }
-#pragma warning restore CA1031 // Do not catch general exception types
 
                     if (token.IsCancellationRequested)
                     {
@@ -512,14 +510,12 @@ namespace SyncChanges
 
                 return currentVersion;
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
                 Log.Error(ex, $"Error getting current version of destination database {dbInfo.Name}. Skipping this destination.");
                 Error = true;
                 return -1;
             }
-#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         protected void SaveState(ChangeInfo changeInfo, string fileName) {
@@ -588,21 +584,24 @@ namespace SyncChanges
             return destFileName;
         }
 
-        protected void TransferAllToBroker()
+        protected async Task TransferAllToBroker()
         {
             string directoryName = GetDirectoryName();
             var fileNames = Directory.GetFiles(directoryName, $"{CHANGEINFO_TO_SEND}*.json");
             foreach (string fileName in fileNames.OrderBy(s => s))
             {
-                TransferToBroker(fileName);
+                await TransferToBroker(fileName);
             }
         }
 
         protected async Task TransferToBroker(string fileName)
         {
 
-            //// Ejecutar transferencia hacia el broker
-            //Log.Info($"ChangeInfo transfering to broker: {fileName}");
+            // Ejecutar transferencia hacia el broker
+            Log.Info($"ChangeInfo transfering to broker: {fileName}");
+
+            
+            
             //var client = new HttpClient();
 
             //var request = new HttpRequestMessage(HttpMethod.Post, $"{Config.Broker.BaseUrl}/api/Broker/PostSingleFile");
@@ -628,9 +627,17 @@ namespace SyncChanges
             request.AlwaysMultipartFormData = true;
             request.AddFile(Path.GetFileName(fileName), fileName);
             request.AddParameter("FileType", "1"); //Json
-            RestResponse response = await client.ExecuteAsync(request);
-            Log.Debug($"response.Content: {response.Content}");
 
+            try
+            {
+                Log.Info($"Transfering...");
+                RestResponse response = await client.ExecuteAsync(request);
+                Log.Debug($"response.Content: {response.Content}");
+            } catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                throw;
+            }
 
             // Finalmente renombrar el archivo enviado
             string destFileName = RenameFileName(fileName, CHANGEINFO_TO_SEND, CHANGEINFO_SENDED);

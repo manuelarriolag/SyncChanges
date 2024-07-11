@@ -118,21 +118,17 @@ public class RemoteToLocalSynchronizer : Synchronizer {
                     Log.Info($"Success. Destination {destination.Name} now at version {changeInfo.Version} (from Remote Origin) (filename: {changeInfo.FileName})");
 
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
                 {
                     Error = true;
                     Log.Error(ex, $"Error replicating changes to destination {destination.Name} (from Remote Origin) (filename: {changeInfo.FileName})");
                 }
-#pragma warning restore CA1031 // Do not catch general exception types
             }
-#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
                 Error = true;
                 Log.Error(ex, $"Error replicating changes to destination {destination.Name} (from Remote Origin) (filename: {changeInfo.FileName})");
             }
-#pragma warning restore CA1031 // Do not catch general exception types
         } // foreach...
 
         if (!Error) {
@@ -170,7 +166,6 @@ public class RemoteToLocalSynchronizer : Synchronizer {
             }
 
         }
-#pragma warning disable CA1031 // Do not catch general exception types
         catch (Exception ex)
         {
             Error = true;
