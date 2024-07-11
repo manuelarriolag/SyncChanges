@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SyncChanges
+namespace SyncChanges.Model
 {
     [Serializable]
     public class TableInfo

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SyncChanges
+namespace SyncChanges.Model
 {
     [Serializable]
     public class ForeignKeyConstraint

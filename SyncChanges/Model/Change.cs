@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SyncChanges
+namespace SyncChanges.Model
 {
     /// <summary>
     /// 

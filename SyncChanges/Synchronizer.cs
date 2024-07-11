@@ -8,7 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
-using JsonSerializer = System.Text.Json.JsonSerializer;
+using SyncChanges.Model;
+using TableInfo = SyncChanges.Model.TableInfo;
 
 namespace SyncChanges
 {

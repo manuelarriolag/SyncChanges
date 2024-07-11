@@ -5,6 +5,8 @@ using System.Linq;
 using Humanizer;
 using NPoco;
 using System.IO;
+using SyncChanges.Model;
+using TableInfo = SyncChanges.Model.TableInfo;
 
 namespace SyncChanges;
 

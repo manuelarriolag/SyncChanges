@@ -1,15 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26228.10
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncChanges", "SyncChanges\SyncChanges.csproj", "{85E1D583-E55F-42DB-89CD-B49F1420ECA7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncChanges", "SyncChanges\SyncChanges.csproj", "{85E1D583-E55F-42DB-89CD-B49F1420ECA7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncChanges.Console", "SyncChanges.Console\SyncChanges.Console.csproj", "{10944BF3-FBAD-405B-AC12-710039881184}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncChanges.Console", "SyncChanges.Console\SyncChanges.Console.csproj", "{10944BF3-FBAD-405B-AC12-710039881184}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncChanges.Tests", "SyncChanges.Tests\SyncChanges.Tests.csproj", "{F2EEADF5-C0C6-4AE9-9AF0-EE9873C112AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncChanges.Tests", "SyncChanges.Tests\SyncChanges.Tests.csproj", "{F2EEADF5-C0C6-4AE9-9AF0-EE9873C112AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncChanges.Service", "SyncChanges.Service\SyncChanges.Service.csproj", "{D0F226BB-6423-40BD-A6DD-C1DF2E03F190}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncChanges.Service", "SyncChanges.Service\SyncChanges.Service.csproj", "{D0F226BB-6423-40BD-A6DD-C1DF2E03F190}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncChanges.WebApi", "SyncChanges.WebApi\SyncChanges.WebApi.csproj", "{D1EBB3BE-0A3A-4E7F-AFB8-5DDD0DDC90F6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,8 +35,15 @@ Global
 		{D0F226BB-6423-40BD-A6DD-C1DF2E03F190}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D0F226BB-6423-40BD-A6DD-C1DF2E03F190}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D0F226BB-6423-40BD-A6DD-C1DF2E03F190}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1EBB3BE-0A3A-4E7F-AFB8-5DDD0DDC90F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1EBB3BE-0A3A-4E7F-AFB8-5DDD0DDC90F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1EBB3BE-0A3A-4E7F-AFB8-5DDD0DDC90F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1EBB3BE-0A3A-4E7F-AFB8-5DDD0DDC90F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4C583EC8-5D93-4FF4-811E-FB4CCF2CD755}
 	EndGlobalSection
 EndGlobal

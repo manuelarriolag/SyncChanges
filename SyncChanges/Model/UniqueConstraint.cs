@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SyncChanges
+namespace SyncChanges.Model
 {
     [Serializable]
-    class UniqueColumn
+    public class UniqueColumn
     {
         public string TableName { get; set; }
         public string ColumnName { get; set; }

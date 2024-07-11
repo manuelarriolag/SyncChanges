@@ -19,7 +19,7 @@ namespace SyncChanges.Console
         bool Error = false;
         int Timeout = 0;
         bool Loop = false;
-        int Interval = 30;
+        int Interval = 60;  //1 min
 
         static int Main(string[] args) {
             try
@@ -36,7 +36,7 @@ namespace SyncChanges.Console
                         { "d|dryrun", "Do not alter target databases, only perform a test run", v => program.DryRun = v != null },
                         { "t|timeout=", "Database command timeout in seconds", (int v) => program.Timeout = v },
                         { "l|loop", "Perform replication in a loop, periodically checking for changes", v => program.Loop = v != null },
-                        { "i|interval=", "Replication interval in seconds (default is 30); only relevant in loop mode", (int v) => program.Interval = v },
+                        { "i|interval=", "Replication interval in seconds (default is 60); only relevant in loop mode", (int v) => program.Interval = v },
                     };
 
                     program.ConfigFiles = options.Parse(args);

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Humanizer;
 using NPoco;
+using SyncChanges.Model;
+using TableInfo = SyncChanges.Model.TableInfo;
 
 namespace SyncChanges;
 
