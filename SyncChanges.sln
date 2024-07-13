@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncChanges.Service", "Sync
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncChanges.WebApi", "SyncChanges.WebApi\SyncChanges.WebApi.csproj", "{D1EBB3BE-0A3A-4E7F-AFB8-5DDD0DDC90F6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncChanges.Console.Poc", "SyncChanges.Console.Poc\SyncChanges.Console.Poc.csproj", "{5E7BD179-03B0-419C-A7A7-D1453CDDBF07}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{D1EBB3BE-0A3A-4E7F-AFB8-5DDD0DDC90F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1EBB3BE-0A3A-4E7F-AFB8-5DDD0DDC90F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1EBB3BE-0A3A-4E7F-AFB8-5DDD0DDC90F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E7BD179-03B0-419C-A7A7-D1453CDDBF07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E7BD179-03B0-419C-A7A7-D1453CDDBF07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E7BD179-03B0-419C-A7A7-D1453CDDBF07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E7BD179-03B0-419C-A7A7-D1453CDDBF07}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -7,14 +7,15 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Microsoft.Extensions.Configuration;
+//using Microsoft.Extensions.Configuration;
 
 namespace SyncChanges.Console
 {
     class Program
     {
         static readonly Logger Log = LogManager.GetCurrentClassLogger();
-        internal static IConfiguration Config { get; private set; }
+        
+        //internal static IConfiguration GlobalConfig { get; private set; }
 
         List<string> ConfigFiles;
         bool DryRun;
@@ -31,9 +32,9 @@ namespace SyncChanges.Console
                 var program = new Program();
                 var showHelp = false;
 
-                Config = new ConfigurationBuilder()
-                    .AddJsonFile("appsettings.json")
-                    .Build();
+                //GlobalConfig = new ConfigurationBuilder()
+                //    .AddJsonFile("appsettings.json")
+                //    .Build();
 
                 try
                 {
@@ -96,23 +97,25 @@ namespace SyncChanges.Console
 
                 try
                 {
+
+                    using var cancellationTokenSource = new CancellationTokenSource();
+                    System.Console.CancelKeyPress += (s, e) =>
+                    {
+                        cancellationTokenSource.Cancel();
+                        e.Cancel = true;
+                    };
+
                     //var synchronizer = new LocalToLocalSynchronizer(config) { DryRun = DryRun, Timeout = Timeout };
                     var synchronizer = new LocalToRemoteSynchronizer(config) { DryRun = DryRun, Timeout = Timeout };
                     //var synchronizer = new RemoteToLocalSynchronizer(config) { DryRun = DryRun, Timeout = Timeout };
                     if (!Loop)
                     {
-                        var success = synchronizer.Sync();
+                        var success = synchronizer.Sync(cancellationTokenSource.Token);
                         Error = Error || !success;
                     }
                     else
                     {
                         synchronizer.Interval = Interval;
-                        using var cancellationTokenSource = new CancellationTokenSource();
-                        System.Console.CancelKeyPress += (s, e) =>
-                        {
-                            cancellationTokenSource.Cancel();
-                            e.Cancel = true;
-                        };
                         synchronizer.SyncLoop(cancellationTokenSource.Token);
                     }
                 }

@@ -132,9 +132,9 @@ public class RemoteToLocalSynchronizer : Synchronizer {
         } // foreach...
 
         if (!Error) {
-            RenameFileName(changeInfo.FileName, CHANGEINFO_RECEIVED, CHANGEINFO_REPLICATED);
+            ExtensionMethods.RenameFileName(changeInfo.FileName, Constants.CHANGEINFO_RECEIVED, Constants.CHANGEINFO_REPLICATED);
         } else {
-            RenameFileName(changeInfo.FileName, CHANGEINFO_RECEIVED, CHANGEINFO_FAILED);
+            ExtensionMethods.RenameFileName(changeInfo.FileName, Constants.CHANGEINFO_RECEIVED, Constants.CHANGEINFO_FAILED);
         }
 
         return Task.CompletedTask;
@@ -159,7 +159,7 @@ public class RemoteToLocalSynchronizer : Synchronizer {
             ReceiveAllFromBroker();
 #endif
             // replicate changes from the remote Origin via broker
-            changeInfo = LoadPersistedChanges(CHANGEINFO_RECEIVED).FirstOrDefault();
+            changeInfo = LoadPersistedChanges(Constants.CHANGEINFO_RECEIVED).FirstOrDefault();
 
             if (changeInfo != null) {
                 Log.Info($"Retrieving {"change".ToQuantity(changeInfo.Changes.Count)} from Remote Origin to Local");

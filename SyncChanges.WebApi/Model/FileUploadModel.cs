@@ -1,4 +1,6 @@
-﻿namespace SyncChanges.WebApi.Model
+﻿using SyncChanges.Model;
+
+namespace SyncChanges.WebApi.Model
 {
     public class FileUploadModel
     {

@@ -3,7 +3,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <Description>Synchronize/Replicate database changes using SQL Server Change Tracking</Description>
-    <Copyright>Copyright 2013-$([System.DateTime]::Now.Year) Michael Ganss</Copyright>
+    <Copyright></Copyright>
     <AssemblyTitle>SyncChanges.Console</AssemblyTitle>
     <AppVeyor_Build_Version Condition="'$(APPVEYOR_BUILD_VERSION)' == ''">1.0.0</AppVeyor_Build_Version>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -13,16 +13,21 @@
     <AssemblyName>SyncChanges.Console</AssemblyName>
     <PackageId>SyncChanges.Console</PackageId>
     <PackageTags>replication synchronization sqlserver sql-server mirroring database</PackageTags>
-    <PackageProjectUrl>https://github.com/mganss/SyncChanges</PackageProjectUrl>
+    <PackageProjectUrl></PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/mganss/SyncChanges/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>git://github.com/mganss/SyncChanges</RepositoryUrl>
+    <RepositoryUrl></RepositoryUrl>
     <RootNamespace>SyncChanges.Console</RootNamespace>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <LangVersion>latest</LangVersion>
     <StartupObject>SyncChanges.Console.Program</StartupObject>
+    <ErrorReport>none</ErrorReport>
+    <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
+    <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
+    <EnableNETAnalyzers>False</EnableNETAnalyzers>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="appsettings.json" />
@@ -52,6 +57,19 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SyncChanges\SyncChanges.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <None Update="config.viveksys.json">

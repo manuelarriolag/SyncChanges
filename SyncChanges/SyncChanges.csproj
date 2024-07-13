@@ -41,7 +41,4 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     <PackageReference Include="RestSharp" Version="111.3.0" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Dataflow\" />
-  </ItemGroup>
 </Project>

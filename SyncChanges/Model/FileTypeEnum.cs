@@ -1,4 +1,4 @@
-﻿namespace SyncChanges.WebApi.Model
+﻿namespace SyncChanges.Model
 {
     public enum FileTypeEnum
     {

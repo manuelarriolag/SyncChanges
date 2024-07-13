@@ -3,11 +3,15 @@
 public class FileSystemStorage : IStorage {
 
     public async Task<string> Save(IFormFile fileData) {
-        var filePath = Path.GetTempFileName();
-            
+
+        // Establecer la ruta del archivo
+        var filePath = Path.Combine(ExtensionMethods.GetDirectoryName(Constants.INPUT_BOX), Path.GetFileName(fileData.FileName));
+
+        // Establecer el nombre del archivo
+        filePath = filePath.Replace(Constants.CHANGEINFO_TO_SEND, Constants.CHANGEINFO_RECEIVED);
+
+        // Grabar el archivo
         await SaveFileData(fileData, filePath);
-            
-        //await SaveStream(fileData.OpenReadStream(), filePath);
             
         return filePath;
     }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SyncChanges.Model;
 using SyncChanges.WebApi.Model;
 
 namespace SyncChanges.WebApi.Services

@@ -29,8 +29,9 @@ namespace SyncChanges.WebApi.Controllers
         [HttpPost("PostSingleFile")]
         public async Task<ActionResult> PostSingleFile([FromForm] FileUploadModel fileDetails)
         {
-            if (fileDetails == null)
+            if (fileDetails == null || fileDetails.FileDetails.Length == 0)
             {
+                Log.Warn("fileDetails is null or empty");
                 return BadRequest();
             }
 
@@ -40,7 +41,7 @@ namespace SyncChanges.WebApi.Controllers
 
                 long size = fileDetails.FileDetails.Length;
 
-                Log.Debug($"Saved to filePath: {filePath}, size: {size}");
+                Log.Info($"Saved to filePath: {filePath}, size: {size}");
 
                 return Ok(new { count = 1, size });
 
@@ -59,8 +60,9 @@ namespace SyncChanges.WebApi.Controllers
         [HttpPost("PostMultipleFile")]
         public async Task<ActionResult> PostMultipleFile([FromForm] List<FileUploadModel> fileDetails)
         {
-            if (fileDetails == null)
+            if (fileDetails == null || fileDetails.Count == 0)
             {
+                Log.Warn("fileDetails is null or empty");
                 return BadRequest();
             }
 
@@ -71,11 +73,11 @@ namespace SyncChanges.WebApi.Controllers
 
                 if (Log.IsDebugEnabled) {
                     foreach (string filePath in files) {
-                        Log.Debug($"Saved to filePath: {filePath}");
+                        Log.Info($"Saved to filePath: {filePath}");
                     }
                 }
 
-                Log.Debug($"Saved files count: {fileDetails.Count}, totalSize: {size}");
+                Log.Info($"Saved files count: {fileDetails.Count}, totalSize: {size}");
 
 
                 return Ok(new { count = fileDetails.Count, size });

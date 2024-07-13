@@ -238,7 +238,7 @@ namespace SyncChanges.Tests
                 }
 
                 var synchronizer = new LocalToLocalSynchronizer(TestConfig);
-                var success = synchronizer.Sync();
+                var success = synchronizer.Sync(CancellationToken.None);
 
                 Assert.That(success, Is.True);
 
@@ -270,7 +270,7 @@ namespace SyncChanges.Tests
                 }
 
                 var synchronizer = new LocalToLocalSynchronizer(TestConfig);
-                var success = synchronizer.Sync();
+                var success = synchronizer.Sync(CancellationToken.None);
 
                 Assert.That(success, Is.True);
 
@@ -311,7 +311,7 @@ namespace SyncChanges.Tests
                 }
 
                 var synchronizer = new LocalToLocalSynchronizer(TestConfig) { DryRun = dryRun };
-                var success = synchronizer.Sync();
+                var success = synchronizer.Sync(CancellationToken.None);
 
                 Assert.That(success, Is.True);
 
@@ -332,7 +332,7 @@ namespace SyncChanges.Tests
                     sourceUsers.Remove(sourceUsers[2]);
                 }
 
-                success = synchronizer.Sync();
+                success = synchronizer.Sync(CancellationToken.None);
 
                 Assert.That(success, Is.True);
 
@@ -378,7 +378,7 @@ namespace SyncChanges.Tests
                 }
 
                 var synchronizer = new LocalToLocalSynchronizer(TestConfig);
-                var success = synchronizer.Sync();
+                var success = synchronizer.Sync(CancellationToken.None);
 
                 Assert.That(success, Is.True);
 
@@ -410,7 +410,7 @@ namespace SyncChanges.Tests
                     db.Insert(sourceUser);
 
                 var synchronizer = new LocalToLocalSynchronizer(TestConfig);
-                var success = synchronizer.Sync();
+                var success = synchronizer.Sync(CancellationToken.None);
 
                 Assert.That(success, Is.True);
 
@@ -423,7 +423,7 @@ namespace SyncChanges.Tests
                     db.Execute(@"alter table Users enable CHANGE_TRACKING with (TRACK_COLUMNS_UPDATED = OFF)");
                 }
 
-                success = synchronizer.Sync();
+                success = synchronizer.Sync(CancellationToken.None);
 
                 Assert.That(success, Is.False);
 
@@ -460,7 +460,7 @@ namespace SyncChanges.Tests
                 }
 
                 var synchronizer = new LocalToLocalSynchronizer(TestConfig);
-                var success = synchronizer.Sync();
+                var success = synchronizer.Sync(CancellationToken.None);
 
                 Assert.That(success, Is.True);
 
@@ -512,7 +512,7 @@ namespace SyncChanges.Tests
                 }
 
                 var synchronizer = new LocalToLocalSynchronizer(TestConfig);
-                var success = synchronizer.Sync();
+                var success = synchronizer.Sync(CancellationToken.None);
 
                 Assert.That(success, Is.True);
 
@@ -547,7 +547,7 @@ namespace SyncChanges.Tests
                 }
 
                 var synchronizer = new LocalToLocalSynchronizer(TestConfig);
-                var success = synchronizer.Sync();
+                var success = synchronizer.Sync(CancellationToken.None);
 
                 Assert.That(success, Is.True);
 
@@ -560,7 +560,7 @@ namespace SyncChanges.Tests
                     db.Update(sourceUser2);
                 }
 
-                success = synchronizer.Sync();
+                success = synchronizer.Sync(CancellationToken.None);
 
                 Assert.That(success, Is.True);
 
@@ -600,7 +600,7 @@ namespace SyncChanges.Tests
             {
                 Timeout = 1000
             };
-            var success = synchronizer.Sync();
+            var success = synchronizer.Sync(CancellationToken.None);
 
             Assert.That(success, Is.True);
         }
@@ -621,7 +621,7 @@ namespace SyncChanges.Tests
             {
                 Timeout = 1000
             };
-            Assert.Throws<Microsoft.Data.SqlClient.SqlException>(() => synchronizer.Sync());
+            Assert.Throws<Microsoft.Data.SqlClient.SqlException>(() => synchronizer.Sync(CancellationToken.None));
         }
 
         [Test]

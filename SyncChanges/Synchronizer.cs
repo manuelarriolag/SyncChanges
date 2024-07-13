@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using SyncChanges.Model;
 using TableInfo = SyncChanges.Model.TableInfo;
@@ -20,12 +19,6 @@ namespace SyncChanges
     /// </summary>
     public abstract class Synchronizer
     {
-        protected const string CHANGEINFO_TO_SEND = "changeinfo-to-send";
-        protected const string CHANGEINFO_SENDED = "changeinfo-sended";
-        protected const string CHANGEINFO_RECEIVED = "changeinfo-received";
-        protected const string CHANGEINFO_REPLICATED = "changeinfo-replicated";
-        protected const string CHANGEINFO_FAILED = "changeinfo-failed";
-
         /// <summary>
         /// Gets or sets a value indicating whether destination databases will be modified during a replication run.
         /// </summary>
@@ -107,7 +100,7 @@ namespace SyncChanges
         /// Perform the synchronization.
         /// </summary>
         /// <returns>true, if the synchronization was successful; otherwise, false.</returns>
-        public bool Sync()
+        public bool Sync(CancellationToken token)
         {
             Error = false;
 
@@ -115,13 +108,17 @@ namespace SyncChanges
 
             for (int i = 0; i < Config.ReplicationSets.Count; i++)
             {
+                if (token.IsCancellationRequested) {
+                    Log.Info("Stopping replication.");
+                    return false;
+                }
                 var replicationSet = Config.ReplicationSets[i];
                 var tables = Tables[i];
 
                 Sync(replicationSet, tables);
             }
 
-            Log.Info($"Finished replication {(Error ? "with" : "without")} errors");
+            Log.Info($"Finished replication {(Error ? "(with error)" : string.Empty)}");
 
             return !Error;
         }
@@ -521,12 +518,7 @@ namespace SyncChanges
         protected void SaveState(ChangeInfo changeInfo, string fileName) {
             try
             {
-                string content = System.Text.Json.JsonSerializer.Serialize(changeInfo,
-                        new JsonSerializerOptions()
-                        {
-                            WriteIndented = true
-                        }                    
-                    );
+                string content = JsonConvert.SerializeObject(changeInfo, Formatting.Indented);
                 File.WriteAllText(fileName, content);
             } catch (Exception ex)
             {
@@ -547,10 +539,10 @@ namespace SyncChanges
         }
 
         protected string PersistChangeInfo(ChangeInfo changeInfo) {
-            string directoryName = GetDirectoryName();
+            string directoryName = ExtensionMethods.GetDirectoryName(Constants.OUTPUT_BOX);
             string utcNow = DateTime.UtcNow.ToString("yyyyMMddHHmmsss");
             string uuid = Guid.NewGuid().ToString("N");
-            string fullFileName = Path.Combine(directoryName, $"{CHANGEINFO_TO_SEND}-{utcNow}-{uuid}-v{changeInfo.Version}.json");
+            string fullFileName = Path.Combine(directoryName, $"{Constants.CHANGEINFO_TO_SEND}-{utcNow}-{uuid}-v{changeInfo.Version}.json");
             changeInfo.FileName = Path.GetFileName(fullFileName);
             SaveState(changeInfo, fullFileName);
             return fullFileName;
@@ -563,7 +555,7 @@ namespace SyncChanges
         protected List<ChangeInfo> LoadPersistedChanges(string listType)
         {
             List<ChangeInfo> list = new List<ChangeInfo>();
-            string directoryName = GetDirectoryName();
+            string directoryName = ExtensionMethods.GetDirectoryName(Constants.OUTPUT_BOX);
             var fileNames = Directory.GetFiles(directoryName, $"{listType}*.json");
             foreach (string fileName in fileNames.OrderBy(s => s)) {
                 ChangeInfo changeInfo = LoadChangeInfo(fileName);
@@ -574,65 +566,51 @@ namespace SyncChanges
             return list;
         }
 
-        private static string GetDirectoryName() {
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "viveksys");
-        }
-
-        protected string RenameFileName(string fileName,  string oldValue, string newValue) {
-            string destFileName = fileName.Replace(oldValue, newValue);
-            File.Move(fileName, destFileName);
-            return destFileName;
-        }
-
         protected async Task TransferAllToBroker()
         {
-            string directoryName = GetDirectoryName();
-            var fileNames = Directory.GetFiles(directoryName, $"{CHANGEINFO_TO_SEND}*.json");
+            string directoryName = ExtensionMethods.GetDirectoryName(Constants.OUTPUT_BOX);
+            var fileNames = Directory.GetFiles(directoryName, $"{Constants.CHANGEINFO_TO_SEND}*.json");
             foreach (string fileName in fileNames.OrderBy(s => s))
             {
                 await TransferToBroker(fileName);
             }
         }
 
-        protected async Task TransferToBroker(string fileName)
+        protected Task TransferToBroker(string fileName)
         {
-
-            // Ejecutar transferencia hacia el broker
-            Log.Info($"ChangeInfo transfering to broker: {fileName}");
-
-            
-            
-            //var client = new HttpClient();
-
-            //var request = new HttpRequestMessage(HttpMethod.Post, $"{Config.Broker.BaseUrl}/api/Broker/PostSingleFile");
-            //request.Headers.Add("accept", "*/*");
-
-            //var content = new MultipartFormDataContent();
-            //content.Add(new StreamContent(File.OpenRead(fileName)), "FileDetails", Path.GetFileName(fileName));
-            //content.Add(new StringContent("1"), "FileType"); //Json
-            //request.Content = content;
-            //var response = await client.SendAsync(request);
-            //response.EnsureSuccessStatusCode();
-
-            //var contentString = await response.Content.ReadAsStringAsync();
-            //Log.Debug($"response.contentString: {contentString}");
-
-
-
-            var options = new RestClientOptions(Config.Broker.BaseUrl); 
-            //options.MaxTimeout = -1;
-            var client = new RestClient(options);
-            var request = new RestRequest("/api/Broker/PostSingleFile", Method.Post);
-            request.AddHeader("accept", "*/*");
-            request.AlwaysMultipartFormData = true;
-            request.AddFile(Path.GetFileName(fileName), fileName);
-            request.AddParameter("FileType", "1"); //Json
 
             try
             {
-                Log.Info($"Transfering...");
-                RestResponse response = await client.ExecuteAsync(request);
-                Log.Debug($"response.Content: {response.Content}");
+                // Ejecutar transferencia hacia el broker
+                Log.Info($"ChangeInfo transfering to broker: {fileName}");
+                Log.Debug($"Config.Broker.BaseUrl: {Config.Broker.BaseUrl}");
+
+                var options = new RestClientOptions(Config.Broker.BaseUrl);
+                options.Timeout = TimeSpan.FromSeconds(10);
+
+                using var client = new RestClient(options);
+                var request = new RestRequest("/api/Broker/PostSingleFile", Method.Post);
+                request.AddHeader("accept", "*/*");
+                request.AlwaysMultipartFormData = true;
+                request.AddFile("FileDetails", fileName, ContentType.Json);
+                request.AddParameter("FileType", FileTypeEnum.Json);
+
+                Log.Info($"Start transfering...");
+                //RestResponse response = await client.ExecuteAsync(request); // MAG: WARNING!! El método Aync provoca un crash 
+                RestResponse response = client.Execute(request); // MAG: WARNING!! El método Aync provoca un crash 
+                Log.Info($"Finished transfering");
+                Log.Debug($"response.Content: {response.Content ?? "Null"}");
+
+                if (response.ErrorException != null) {
+                    Log.Warn($"ErrorException recieved: {response.ErrorException.GetType().Name}");
+                    throw response.ErrorException;
+                }
+                if (response.ErrorMessage != null)
+                {
+                    Log.Warn($"ErrorMessage recieved: {response.ErrorMessage}");
+                    throw new Exception(response.ErrorMessage);
+                }
+
             } catch (Exception ex)
             {
                 Log.Error(ex.Message);
@@ -640,15 +618,16 @@ namespace SyncChanges
             }
 
             // Finalmente renombrar el archivo enviado
-            string destFileName = RenameFileName(fileName, CHANGEINFO_TO_SEND, CHANGEINFO_SENDED);
+            string destFileName = ExtensionMethods.RenameFileName(fileName, Constants.CHANGEINFO_TO_SEND, Constants.CHANGEINFO_SENDED);
             Log.Info($"ChangeInfo sended: {destFileName}");
 
+            return Task.CompletedTask;
         }
 
         protected void ReceiveAllFromBroker()
         {
-            string directoryName = GetDirectoryName();
-            var fileNames = Directory.GetFiles(directoryName, $"{CHANGEINFO_SENDED}*.json");
+            string directoryName = ExtensionMethods.GetDirectoryName(Constants.OUTPUT_BOX);
+            var fileNames = Directory.GetFiles(directoryName, $"{Constants.CHANGEINFO_SENDED}*.json");
             foreach (string fileName in fileNames.OrderBy(s => s))
             {
                 ReceiveFromBroker(fileName);
@@ -660,10 +639,9 @@ namespace SyncChanges
 
             // TODO: Implementar recepción
 
-            string destFileName = RenameFileName(fileName, CHANGEINFO_SENDED, CHANGEINFO_RECEIVED);
+            string destFileName = ExtensionMethods.RenameFileName(fileName, Constants.CHANGEINFO_SENDED, Constants.CHANGEINFO_RECEIVED);
             Log.Info($"ChangeInfo received: {destFileName}");
 
         }
-
     }
 }

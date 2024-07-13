@@ -1,4 +1,5 @@
-﻿using SyncChanges.WebApi.Model;
+﻿using SyncChanges.Model;
+using SyncChanges.WebApi.Model;
 
 namespace SyncChanges.WebApi.Services
 {
